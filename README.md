@@ -64,16 +64,43 @@ source .venv/bin/activate
 uv run main.py "<your question or instruction>"
 ```
 
-**Examples:**
-```bash
-uv run main.py "how does the calculator render results to the console?"
-uv run main.py "Fix the bug: 3 + 7 * 2 shouldn't be 20"
-uv run main.py "Add input validation to the calculator" --verbose
-```
-
 **Flags:**
 - `--verbose` — prints token usage and raw function responses each iteration
 - `--system v1|v2` — choose which system prompt to use (default: `v2`)
+
+## Examples
+
+### Asking a question
+```
+$ uv run main.py "how does the calculator render results to the console?"
+
+ - Calling function: get_files_info
+ - Calling function: get_file_content
+ - Calling function: get_file_content
+
+The calculator renders results to the console by first evaluating the expression
+using the Calculator class. If a valid result is obtained, it calls format_json_output
+from pkg/render.py, which formats the expression and result into a JSON string with
+an indent of 2. That string is then printed to the console via print(). If the result
+is a whole number, it is converted to an integer before being included in the output.
+```
+
+### Fixing a bug
+```
+$ uv run main.py "Fix the bug: 3 + 7 * 2 shouldn't be 20."
+
+ - Calling function: get_files_info
+ - Calling function: get_file_content
+ - Calling function: get_file_content
+ - Calling function: write_file
+ - Calling function: run_python_file
+
+The bug has been fixed. The precedence of the + operator was incorrectly set to 3,
+higher than * which was 2. This caused "3 + 7 * 2" to evaluate as (3 + 7) * 2 = 20.
+
+The precedence of + and - has been corrected to 1, making them lower than * and /
+(which are 2). The expression "3 + 7 * 2" now correctly evaluates to 17.
+```
 
 ## Limitations
 
