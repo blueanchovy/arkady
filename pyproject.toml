@@ -1,10 +1,17 @@
 [project]
-name = "mini-claude-code"
+name = "arkady"
 version = "0.1.0"
-description = "Add your description here"
+description = "AI coding agent"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "google-genai==1.12.1",
     "python-dotenv==1.1.0",
 ]
+
+[project.scripts]
+arkady = "arkady.main:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

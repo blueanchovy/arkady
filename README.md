@@ -1,116 +1,123 @@
-# mini-claude-code
+# Arkady
 
-A terminal-based AI coding agent powered by the Gemini API. Point it at a codebase and ask it questions, debug issues, or make changes — it will explore the code, reason about it, and take action autonomously.
+A terminal-based AI coding agent powered by the Gemini API. Navigate to any codebase, run `arkady`, and talk to it — it will explore the code, reason about it, and take action autonomously.
 
 ## What it does
 
-- Lists and reads files in a working directory
+- Lists and reads files in your current directory
 - Writes and modifies files
 - Runs Python files and inspects output
+- Maintains conversation history across turns in a single session
 - Iterates autonomously using a tool-calling loop until it has a final answer
 
 ## Project structure
+
 ```
 mini-claude-code/
-├── main.py                         # Entry point and agent loop
-├── prompts.py                      # System prompt versions
-├── config.py                       # Configuration (e.g. MAX_CHARS)
-├── functions/
-│   ├── get_files_info.py           # List files in a directory
-│   ├── get_file_content.py         # Read file contents
-│   ├── write_file.py               # Write or overwrite a file
-│   ├── run_python_file.py          # Execute a Python file
-│   └── genai/
-│       └── call_function.py        # Tool dispatcher and schema registry
-├── calculator/                     # Sample codebase the agent works on
-│   ├── main.py
-│   └── pkg/
-│       ├── calculator.py
-│       └── render.py
-├── test_get_file_content.py
-├── test_get_files_info.py
-├── test_run_python_file.py
-└── test_write_file.py
+├── pyproject.toml
+├── arkady/
+│   ├── main.py                     # Entry point, REPL loop, agent loop
+│   ├── prompts.py                  # System prompt versions
+│   ├── config.py                   # Configuration (e.g. MAX_CHARS)
+│   └── functions/
+│       ├── get_files_info.py       # List files in a directory
+│       ├── get_file_content.py     # Read file contents
+│       ├── write_file.py           # Write or overwrite a file
+│       ├── run_python_file.py      # Execute a Python file
+│       └── genai/
+│           └── call_function.py    # Tool dispatcher and schema registry
+└── calculator/                     # Sample codebase to test the agent on
 ```
 
-## Setup
+## Requirements
 
-**Prerequisites:** Python 3.12+, [uv](https://github.com/astral-sh/uv)
+- Python 3.12+
+- [uv](https://docs.astral.sh/uv/getting-started/installation/)
+- A Gemini API key — get one free at [aistudio.google.com](https://aistudio.google.com)
 
-1. Clone the repo and install dependencies:
+## Installation
+
+Clone the repo and install `arkady` as a global tool:
+
 ```bash
 git clone <repo-url>
 cd mini-claude-code
-uv sync
+uv tool install .
 ```
 
-2. Copy `.env.example` to `.env` and add your Gemini API key:
-```bash
-cp .env.example .env
-```
-```
-GEMINI_API_KEY=your_key_here
-```
-
-Get a key at [aistudio.google.com](https://aistudio.google.com).
-
-3. Activate the virtual environment:
-```bash
-source .venv/bin/activate
-```
+`arkady` is now available as a command anywhere on your system.
 
 ## Usage
+
+Navigate to any project and run:
+
 ```bash
-uv run main.py "<your question or instruction>"
+cd /path/to/your/project
+arkady --provider google --api-key YOUR_KEY
+```
+
+Arkady will ask for permission to access the directory, then drop you into an interactive session:
+
+```
+Arkady wants to access:
+  /home/user/myproject
+
+Allow? [y/N]: y
+
+Arkady is ready. Type your request, or 'exit' to quit.
+
+you: how does authentication work in this codebase?
+  > get_files_info({'directory': '.'})
+  > get_file_content({'file_path': 'auth/middleware.py'})
+
+Arkady: Authentication is handled by ...
+
+you: fix the bug where expired tokens aren't being rejected
+  > get_file_content({'file_path': 'auth/middleware.py'})
+  > write_file({'file_path': 'auth/middleware.py', ...})
+  > run_python_file({'file_path': 'tests/test_auth.py'})
+
+Arkady: Fixed. The token expiry check was ...
+
+you: exit
 ```
 
 **Flags:**
-- `--verbose` — prints token usage and raw function responses each iteration
-- `--system v1|v2` — choose which system prompt to use (default: `v2`)
+- `--provider google` — LLM provider to use (currently only `google` is supported)
+- `--api-key KEY` — API key for the provider
+- `--verbose` — print token usage and raw function responses each iteration
 
-## Examples
+## Try it on the sample codebase
 
-### Asking a question
-```
-$ uv run main.py "how does the calculator render results to the console?"
+The `calculator/` directory contains a simple infix expression evaluator you can use to test the agent:
 
- - Calling function: get_files_info
- - Calling function: get_file_content
- - Calling function: get_file_content
-
-The calculator renders results to the console by first evaluating the expression
-using the Calculator class. If a valid result is obtained, it calls format_json_output
-from pkg/render.py, which formats the expression and result into a JSON string with
-an indent of 2. That string is then printed to the console via print(). If the result
-is a whole number, it is converted to an integer before being included in the output.
+```bash
+cd calculator
+arkady --provider google --api-key YOUR_KEY
 ```
 
-### Fixing a bug
 ```
-$ uv run main.py "Fix the bug: 3 + 7 * 2 shouldn't be 20."
-
- - Calling function: get_files_info
- - Calling function: get_file_content
- - Calling function: get_file_content
- - Calling function: write_file
- - Calling function: run_python_file
-
-The bug has been fixed. The precedence of the + operator was incorrectly set to 3,
-higher than * which was 2. This caused "3 + 7 * 2" to evaluate as (3 + 7) * 2 = 20.
-
-The precedence of + and - has been corrected to 1, making them lower than * and /
-(which are 2). The expression "3 + 7 * 2" now correctly evaluates to 17.
+you: how does operator precedence work here?
+you: fix the bug: 3 + 7 * 2 gives 20 instead of 17
 ```
-
-## Limitations
-
-Currently the agent is hardcoded to work on the `calculator/` directory. To use it on a different codebase, update the `working_directory` value in `functions/genai/call_function.py` and add the codebase you want to work on inside this directory. A `--working-dir` CLI flag to make this configurable at runtime is planned.
 
 ## Rate limits
 
-The free tier of the Gemini API allows 5 requests per minute and 20 per day on `gemini-2.5-flash`. The agent handles rate limit errors automatically by waiting and retrying. For heavier use, add billing at [aistudio.google.com](https://aistudio.google.com).
+The free tier of the Gemini API allows 5 requests per minute on `gemini-2.5-flash`. The agent handles rate limit errors automatically by waiting and retrying. For heavier use, add billing at [aistudio.google.com](https://aistudio.google.com).
 
-## Running tests
+## Development
+
+To work on Arkady itself:
+
+```bash
+git clone <repo-url>
+cd arkady
+uv sync
+uv run arkady --provider google --api-key YOUR_KEY
+```
+
+Run tests:
+
 ```bash
 uv run pytest
 ```

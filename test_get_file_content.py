@@ -1,4 +1,4 @@
-from functions.get_file_content import get_file_content
+from arkady.functions.get_file_content import get_file_content
 
 def main():
     get_file_content("calculator", "lorem.txt")
