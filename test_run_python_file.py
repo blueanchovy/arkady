@@ -1,4 +1,4 @@
-from functions.run_python_file import run_python_file
+from arkady.functions.run_python_file import run_python_file
 
 def main():
     run_python_file("calculator", "main.py")

@@ -1,4 +1,4 @@
-from functions.get_files_info import get_files_info
+from arkady.functions.get_files_info import get_files_info
 
 def main():
     get_files_info("calculator", ".")

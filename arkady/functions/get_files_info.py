@@ -10,7 +10,7 @@ schema_get_files_info = types.FunctionDeclaration(
             "directory": types.Schema(
                 type=types.Type.STRING,
                 description="Directory path to list files from, relative to the working directory (default is the working directory itself)",
-                default= "."
+                default="."
             ),
         },
         required=["directory"]
@@ -24,7 +24,7 @@ def get_files_info(working_directory, directory="."):
         os.path.join(working_directory_abs, directory)
     )
 
-    try: 
+    try:
         valid_target_dir = os.path.commonpath(
             [working_directory_abs, target_dir]
         ) == working_directory_abs
@@ -40,7 +40,7 @@ def get_files_info(working_directory, directory="."):
         error = f'Cannot list "{directory}" as it is not a directory'
         print(f"Error: {error}")
         return error
-    
+
     result = []
 
     def list_files(dir):
@@ -49,7 +49,7 @@ def get_files_info(working_directory, directory="."):
             full_path = os.path.join(dir, val)
             size = os.path.getsize(full_path)
 
-            if os.path.isdir(full_path) == True: 
+            if os.path.isdir(full_path) == True:
                 print(f"  - {val}: file_size={size} bytes, is_dir=True")
                 result.append({
                     "name": val,
@@ -67,11 +67,9 @@ def get_files_info(working_directory, directory="."):
         print("\n")
         return result
 
-
-    try: 
+    try:
         res = list_files(target_dir)
         return res
     except Exception as e:
         print(f"Error: {e}")
         return f"Error: {e}"  # ← and this
-

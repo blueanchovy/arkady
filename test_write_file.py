@@ -1,4 +1,4 @@
-from functions.write_file import write_file
+from arkady.functions.write_file import write_file
 
 def main():
     write_file("calculator", "lorem.txt", "wait, this isn't lorem ipsum")

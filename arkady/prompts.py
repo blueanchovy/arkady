@@ -104,7 +104,6 @@ Critical rules:
 - Once you have enough information, stop calling functions immediately and give your final answer
 - Do not explore files out of curiosity — only read what is directly needed
 - After writing a fix, always verify it by running the relevant file with a test input
-- When running the calculator to verify, use `main.py` with the expression as an argument
 """
 
 # system_prompt_v4 = """
